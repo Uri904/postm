@@ -2,6 +2,19 @@
 
 API REST con Spring Boot, Spring Data JPA y H2 para administrar artistas, álbumes, canciones, usuarios y roles. La base relacional persiste en `./data/musica` al ejecutar la aplicación.
 
+## Documentación y guía breve
+
+- [Manual de uso: Postman y tokens JWT](docs/manual-postman-y-tokens.docx) (Word): paso a paso para ejecutar la API, obtener un token por usuario y probar cada controlador desde Postman y desde la terminal, con tabla de rutas, permisos, limitaciones y lista de comprobación.
+- [Colección Postman](postman/proyecto-musica.postman_collection.json)
+- [Estructura de la base de datos](docs/estructura-base-datos.md)
+
+Inicio rápido (detalles en el manual):
+
+1. Define `JWT_SECRET` (mínimo 32 bytes; consérvalo entre reinicios) y, opcionalmente, `BOOTSTRAP_ADMIN_USERNAME` y `BOOTSTRAP_ADMIN_PASSWORD`; luego ejecuta `./gradlew bootRun`.
+2. Registra una cuenta: `POST /api/usuarios` con `username`, `email`, `nombre` y `contrasena`.
+3. Obtén su token: `POST /api/auth/token` con `username` y `contrasena`, y úsalo como `Authorization: Bearer <TOKEN>` (dura una hora).
+4. Desde otro equipo de la red usa `http://<IP_LOCAL>:8080` y permite el puerto TCP 8080 en el firewall.
+
 ## Requisitos
 
 - Java 17
