@@ -1,0 +1,915 @@
+{
+  "info": {
+    "_postman_id": "d27eb1b3-d77d-40b9-9ef3-9e5161e1bfe4",
+    "name": "API de gestión musical",
+    "description": "Pruebas CRUD musicales con JWT Bearer, roles, privacidad y derechos ARCO. Registre el usuario de Postman, obtenga su token y configure las credenciales del administrador.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "artistaId",
+      "value": ""
+    },
+    {
+      "key": "albumId",
+      "value": ""
+    },
+    {
+      "key": "cancionId",
+      "value": ""
+    },
+    {
+      "key": "usuario",
+      "value": "postman-usuario"
+    },
+    {
+      "key": "contrasena",
+      "value": "Usuario-fuerte-123"
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "adminAccessToken",
+      "value": ""
+    },
+    {
+      "key": "otroUsuarioId",
+      "value": ""
+    },
+    {
+      "key": "admin",
+      "value": "admin-local"
+    },
+    {
+      "key": "adminContrasena",
+      "value": "Admin-local-fuerte-123"
+    },
+    {
+      "key": "rolId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Artistas (CRUD)",
+      "description": "CRUD de artistas. El borrado se rechaza mientras existan álbumes asociados.",
+      "item": [
+        {
+          "name": "Crear artista (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('artistaId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Los Ejemplos\",\n  \"pais\": \"México\",\n  \"fechaFormacion\": \"2001-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/artistas"
+          }
+        },
+        {
+          "name": "Listar artistas (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/artistas"
+          }
+        },
+        {
+          "name": "Consultar artista (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/artistas/{{artistaId}}"
+          }
+        },
+        {
+          "name": "Actualizar artista (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Los Ejemplos Actualizados\",\n  \"pais\": \"Chile\",\n  \"fechaFormacion\": \"2001-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/artistas/{{artistaId}}"
+          }
+        },
+        {
+          "name": "No borrar artista con álbumes (DELETE esperado 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('La relación bloquea el borrado (409)', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/artistas/{{artistaId}}"
+          }
+        },
+        {
+          "name": "Borrar artista (DELETE 204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 204 No Content', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/artistas/{{artistaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Álbumes (CRUD)",
+      "description": "CRUD de álbumes. El borrado se rechaza mientras existan canciones asociadas.",
+      "item": [
+        {
+          "name": "Crear álbum (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('albumId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Primer álbum\",\n  \"fechaLanzamiento\": \"2024-01-01\",\n  \"genero\": \"Rock\",\n  \"artistaId\": {{artistaId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/albumes"
+          }
+        },
+        {
+          "name": "Rechazar álbum con artista inexistente (POST esperado 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('La referencia inválida responde 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Álbum inválido\",\n  \"artistaId\": 999999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/albumes"
+          }
+        },
+        {
+          "name": "Listar álbumes (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/albumes"
+          }
+        },
+        {
+          "name": "Consultar álbum (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/albumes/{{albumId}}"
+          }
+        },
+        {
+          "name": "Actualizar álbum (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Primer álbum - edición\",\n  \"fechaLanzamiento\": \"2024-01-01\",\n  \"genero\": \"Rock alternativo\",\n  \"artistaId\": {{artistaId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/albumes/{{albumId}}"
+          }
+        },
+        {
+          "name": "No borrar álbum con canciones (DELETE esperado 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('La relación bloquea el borrado (409)', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/albumes/{{albumId}}"
+          }
+        },
+        {
+          "name": "Borrar álbum (DELETE 204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 204 No Content', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/albumes/{{albumId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Canciones (CRUD)",
+      "description": "CRUD de canciones y validación de pista duplicada.",
+      "item": [
+        {
+          "name": "Crear canción (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('cancionId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tema inicial\",\n  \"numeroPista\": 1,\n  \"duracionSegundos\": 210,\n  \"albumId\": {{albumId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/canciones"
+          }
+        },
+        {
+          "name": "Listar canciones (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/canciones"
+          }
+        },
+        {
+          "name": "Consultar canción (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/canciones/{{cancionId}}"
+          }
+        },
+        {
+          "name": "Actualizar canción (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tema inicial editado\",\n  \"numeroPista\": 1,\n  \"duracionSegundos\": 215,\n  \"albumId\": {{albumId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/canciones/{{cancionId}}"
+          }
+        },
+        {
+          "name": "Rechazar canción con pista duplicada (POST esperado 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('La pista repetida responde 409', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Pista duplicada\",\n  \"numeroPista\": 1,\n  \"duracionSegundos\": 200,\n  \"albumId\": {{albumId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/canciones"
+          }
+        },
+        {
+          "name": "Borrar canción (DELETE 204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 204 No Content', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/canciones/{{cancionId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios (CRUD)",
+      "description": "Registro y consulta de cuenta. Un usuario actualiza solo su cuenta; listar/eliminar y crear administradores requiere token ADMIN.",
+      "item": [
+        {
+          "name": "Registrar usuario normal (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 y asigna rol USUARIO', function () { pm.response.to.have.status(201); pm.expect(pm.response.json().rol).to.eql('USUARIO'); });",
+                  "pm.collectionVariables.set('usuarioId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usuario}}\",\n  \"email\": \"postman-usuario@example.com\",\n  \"nombre\": \"Usuario Postman\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {
+          "name": "Registrar segundo usuario (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 y asigna rol USUARIO', function () { pm.response.to.have.status(201); pm.expect(pm.response.json().rol).to.eql('USUARIO'); });",
+                  "pm.collectionVariables.set('otroUsuarioId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"postman-otro\",\n  \"email\": \"postman-otro@example.com\",\n  \"nombre\": \"Otro Usuario\",\n  \"contrasena\": \"Usuario-fuerte-456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {
+          "name": "Consultar mi perfil (GET)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/usuarios/me"
+          }
+        },
+        {
+          "name": "Usuario normal: consultar su cuenta (GET)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Actualizar mi usuario (PUT)",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usuario}}\",\n  \"email\": \"postman-usuario@example.com\",\n  \"nombre\": \"Usuario Postman actualizado\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Usuario normal: se deniega cuenta ajena (GET esperado 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('No puede consultar otra cuenta', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/usuarios/{{otroUsuarioId}}"
+          }
+        },
+        {
+          "name": "Admin: listar usuarios (GET)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {
+          "name": "Admin: crear otra cuenta admin (POST)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"postman-admin-secundario\",\n  \"email\": \"postman-admin@example.com\",\n  \"nombre\": \"Administrador secundario\",\n  \"contrasena\": \"Admin-fuerte-secundario-123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/usuarios/admin"
+          }
+        },
+        {
+          "name": "Admin: eliminar usuario de Postman (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles (CRUD - solo ADMIN)",
+      "description": "Solo existen USUARIO y ADMIN. Crear/eliminar requiere que el rol indicado no exista/tenga usuarios asignados.",
+      "item": [
+        {
+          "name": "Listar roles (GET)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/roles"
+          }
+        },
+        {
+          "name": "Consultar rol (GET)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/roles/{{rolId}}"
+          }
+        },
+        {
+          "name": "Crear rol (POST)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"USUARIO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/roles"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('rolId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar rol (PUT)",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/roles/{{rolId}}"
+          }
+        },
+        {
+          "name": "Eliminar rol (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/roles/{{rolId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autenticación",
+      "description": "Obtiene tokens Bearer para usuario normal y administrador.",
+      "item": [
+        {
+          "name": "Obtener token de usuario (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde con token Bearer', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().tokenType).to.eql('Bearer'); });",
+                  "pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usuario}}\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/auth/token"
+          }
+        },
+        {
+          "name": "Admin: obtener token (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde con token Bearer de admin', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().tokenType).to.eql('Bearer'); });",
+                  "pm.collectionVariables.set('adminAccessToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin}}\",\n  \"contrasena\": \"{{adminContrasena}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/auth/token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Privacidad y derechos ARCO",
+      "description": "Consultas informativas; la API no recibe ni tramita solicitudes ARCO.",
+      "item": [
+        {
+          "name": "Consultar políticas de seguridad (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/privacidad/politicas-seguridad"
+          }
+        },
+        {
+          "name": "Consultar derechos ARCO (GET)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/privacidad/derechos-arco"
+          }
+        }
+      ]
+    }
+  ]
+}
